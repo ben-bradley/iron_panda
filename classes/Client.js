@@ -12,17 +12,19 @@ module.exports = Events.extend({
 		this.hub = hub;
 		this.channel = channel;
 		this.hubUrl = (this.hub && this.channel) ? 'http://'+this.hub+'/'+this.channel : false;
-		if (this.hubUrl) { this.connect(); }
+		if (this.hubUrl) { this._connect(); }
 		else { console.log('cannot connect to: http://'+this.hubUrl); }
 	},
 	
+	// shut down this client
 	close: function() {
 		this.io.disconnect();
 		this.emit('closed', this.id);
 		delete this;
 	},
 	
-	connect: function() {
+	// private fn to initiate a connection
+	_connect: function() {
 		var self = this;
 		this.io = ioClient.connect(this.hubUrl);
 		// handle the returned channelId

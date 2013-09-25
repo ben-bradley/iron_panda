@@ -16,6 +16,7 @@ var ServerChannel = Events.extend({
 		this.io.on('connection', function(socket) { self.connection(socket); }); // handle the client connections
 	},
 	
+	// handle new connections
 	connection: function(socket) {
 		var self = this;
 		
@@ -27,6 +28,7 @@ var ServerChannel = Events.extend({
 		
 	},
 	
+	// handle when the client accepts the connection
 	connected: function(socket) {
 		console.log('client sent "connected"');
 	}

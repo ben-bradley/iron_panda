@@ -7,8 +7,9 @@ var Client = require('./Client');
 module.exports = Client.extend({
 	
 	// inject the 'control' channel and pass through to Client.js.init()
-	init: function(hub) {
+	init: function(hub, config) {
 		var self = this;
+		this._config = config;
 		this.on('connected', function() { self.connected(); });
 		this._super(hub, 'control');
 	},
@@ -18,7 +19,10 @@ module.exports = Client.extend({
 		var self = this;
 		
 		// pass through when we get sync data from the server
-		this.io.on('sync', function(config) { self.emit('gotSync', config); });
+		this.io.on('sync', function(remoteConfig) { self.emit('gotSync', remoteConfig); });
+		
+		// send local config data to the server
+		this.io.emit('sync', this._config);
 		
 	}
 	

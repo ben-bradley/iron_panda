@@ -9,13 +9,20 @@ var Events = require('./Events'),
 
 module.exports = Events.extend({
 	
-	init: function() {
+	init: function(config) {
 		this.models = {};
 		this.channelIds = {};
+		this._config = config;
 	},
 	
-	add: function(hub) {
-		var client = new ClientControl(hub),
+	addAll: function() {
+		var self = this;
+		this._config.hubs.forEach(function(hub) { self.addOne(hub); })
+	},
+	
+	// Connect to a new hub's control channel
+	addOne: function(hub) {
+		var client = new ClientControl(hub, this._config),
 				self = this;
 		
 		// handle new channel IDs (connect or close based on duplicate IDs)
