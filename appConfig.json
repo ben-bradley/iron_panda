@@ -15,6 +15,7 @@
 		}
 	],
 	"hubs": [
-		"api.integra.engr:8087"
+		"api.integra.engr:8087",
+		"web-2-test.integra.engr:8087"
 	]
 }

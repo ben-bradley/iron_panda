@@ -26,7 +26,8 @@ module.exports = Events.extend({
 	// private fn to initiate a connection
 	_connect: function() {
 		var self = this;
-		this.io = ioClient.connect(this.hubUrl);
+		// include secret for authorization
+		this.io = ioClient.connect(this.hubUrl, { query: 'secret='+this._config.secret });
 		// handle the returned channelId
 		this.io.on('connected', function(channelId) {
 			self.channelId = channelId;

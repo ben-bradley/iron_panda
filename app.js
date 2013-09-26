@@ -5,7 +5,6 @@ var Config = require('./classes/Config'),
 
 var config = new Config(),  // KICK THIS PIG!!!
 		server = {},
-//		clients = new Clients(),
 		clients = {},
 		connectedChannelIds = {};
 

@@ -15,8 +15,18 @@ var Server = Events.extend({
 	},
 	
 	start: function(callback) {
+		var self = this;
+		
 		// start the server
 		this.io = io.listen(this.config.ioPort);
+		
+		// set the authorization
+		this.io.configure(function() {
+			self.io.set('authorization', function(handshakeData, callback) {
+				if (handshakeData.query.secret == self.config.secret) { callback(null, true); }
+				else { callback(null, false); }
+			});
+		});
 		
 		// open the channels
 		this.channels = {
