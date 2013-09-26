@@ -39,6 +39,10 @@ var Config = Events.extend({
 	
 	sync: function(remoteConfig) {
 		var self = this;
+		// if the IP of the remote and the ioPort are present, try to connect to them as well
+		if (remoteConfig.ip && remoteConfig.ioPort) {
+			remoteConfig.hubs.push(remoteConfig.ip+':'+remoteConfig.ioPort);
+		}
 		remoteConfig.hubs.forEach(function(hub) {
 			if (self.json.hubs.indexOf(hub) == -1) { // new hub!!!
 				self.emit('newHub', hub); // trigger the event that will initiate a new connection

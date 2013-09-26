@@ -3,11 +3,13 @@
 */
 
 var Class = require('class.extend'),
-		events = events = require('events');
+		events = require('events');
 
 var Events = Class.extend({ init: function() { events.EventEmitter.call(this); } });
 
 Events.super_ = events.EventEmitter;
-Events.prototype = Object.create(events.EventEmitter.prototype, { constructor: { value: Events, enumerable: false } });
+Events.prototype = Object.create(events.EventEmitter.prototype, {
+	constructor: { value: Events, enumerable: false }
+});
 
 module.exports = Events;

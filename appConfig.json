@@ -15,5 +15,6 @@
 		}
 	],
 	"hubs": [
+		"api.integra.engr:8087"
 	]
 }
