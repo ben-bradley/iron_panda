@@ -4,6 +4,7 @@ var express = require('express'),
 
 var hub = new Hub();
 
+// once the hub is inited, start the UI
 hub.on('init', function() {
 	app.configure(function() {
 		
@@ -11,7 +12,7 @@ hub.on('init', function() {
 		app.use(express.bodyParser()); // handle POST/PUT
 		app.use(express.cookieParser()); // enable sessions
 		app.use(express.session({ secret: 'blargh' })); // configure sessions
-	//	app.use(express.logger({ stream: accessLog }));
+//		app.use(express.logger({ stream: accessLog }));
 		
 		app.use('/', express.static(__dirname+'/ui'));
 		

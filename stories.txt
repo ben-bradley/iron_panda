@@ -1,0 +1,5 @@
+The UI
+	show local & remote hub statuses
+	start & stop hub
+	connect new hubs
+	modify configurations in appConfig.json
