@@ -15,7 +15,7 @@
 		}
 	],
 	"hubs": [
-		"api.integra.engr:8087",
-		"web-2-test.integra.engr:8087"
+		{ "socketio": "api.integra.engr:8087", "express": "api.integra.engr:8088" },
+		{ "socketio": "web-2-test.integra.engr:8087", "express": "web-2-test.integra.engr:8088" }
 	]
 }

@@ -28,8 +28,6 @@ var Hub = Events.extend({
 				
 				// server is started, connect to the hubs
 				self.clients.addAll();
-				
-				self.emit('init'); // hub.inited!
 			});
 			
 			// when a client emits a 'gotSync', send the remoteConfig to the config class for processing
@@ -37,14 +35,43 @@ var Hub = Events.extend({
 				self.config.sync(remoteConfig);
 			});
 			
+			
+			self.emit('init'); // hub.inited!
+			
+			
 			// start the server
-			self.server.start();
+			// this turned off so that the GUI can turn the hub on/off
+//			self.server.start();
 		});
 		
 		// when a sync event finds a new hub, connect to it
 		this.config.on('newHub', function(hub) {
 			self.clients.addOne(hub)
 		});
+	},
+	
+	data: function() {
+		var self = this;
+		
+		var data = {
+			server: {
+				id: this.server.id,
+				started: this.server.started,
+				channels: function() {
+					var channels = [];
+					for (var c in self.server.channels) {
+						var channel = self.server.channels[c];
+						channels.push({
+							id: channel.channelId,
+							name: c,
+							clientsConnected: channel.clientsConnected
+						});
+					}
+					return channels;
+				}()
+			}
+		};
+		return data;
 	}
 	
 });

@@ -10,20 +10,21 @@ var Events = require('./Events'),
 var Server = Events.extend({
 	
 	init: function(config) {
-		this.config = config;
+		this._config = config;
 		this.id = new Date().getTime();
+		this.started = false;
 	},
 	
 	start: function(callback) {
 		var self = this;
 		
 		// start the server
-		this.io = io.listen(this.config.ioPort);
+		this.io = io.listen(this._config.ioPort);
 		
 		// set the authorization
 		this.io.configure(function() {
 			self.io.set('authorization', function(handshakeData, callback) {
-				if (handshakeData.query.secret == self.config.secret) { callback(null, true); }
+				if (handshakeData.query.secret == self._config.secret) { callback(null, true); }
 				else { callback(null, false); }
 			});
 		});
@@ -36,6 +37,7 @@ var Server = Events.extend({
 		
 		// emit the started event
 		this.emit('started');
+		this.started = true;
 		if (callback) { callback(); }
 	}
 	

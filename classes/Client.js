@@ -11,7 +11,7 @@ module.exports = Events.extend({
 		this.id = new Date().getTime();
 		this.hub = hub;
 		this.channel = channel;
-		this.hubUrl = (this.hub && this.channel) ? 'http://'+this.hub+'/'+this.channel : false;
+		this.hubUrl = (this.hub.socketio && this.channel) ? 'http://'+this.hub.socketio+'/'+this.channel : false;
 		if (this.hubUrl) { this._connect(); }
 		else { console.log('cannot connect to: http://'+this.hubUrl); }
 	},
@@ -19,7 +19,7 @@ module.exports = Events.extend({
 	// shut down this client
 	close: function() {
 		this.io.disconnect();
-		this.emit('closed', this.id);
+		this.emit('closed');
 		delete this;
 	},
 	
@@ -33,6 +33,8 @@ module.exports = Events.extend({
 			self.channelId = channelId;
 			self.emit('gotChannelId'); // handle the channelId at the collection to sort out duplicates
 		});
+		
+		this.io.on('disconnect', function() { self.emit('closed'); });
 	}
 	
 });

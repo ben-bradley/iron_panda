@@ -24,6 +24,22 @@ module.exports = Client.extend({
 		// send local config data to the server
 		this.io.emit('sync', this._config);
 		
+	},
+	
+	getChannels: function(callback) {
+		var self = this;
+		// listen for the IO event and pass it through to the object
+		this.io.once('gotChannels', function(channels) { self.emit('gotChannels', channels); });
+		this.io.emit('getChannels');
+	},
+	
+	toJSON: function() {
+		return {
+			id: this.id,
+			hub: this.hub,
+			channel: this.channel,
+			hubUrl: this.hubUrl
+		};
 	}
 	
 });
