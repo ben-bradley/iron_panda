@@ -1,79 +1,37 @@
-var Events = require('./Events');
+var Events = require('./Events'),
+		Server = require('./Server'),
+		Controllers = require('./Controllers');
 
-var Hub = Events.extend({
+module.exports = Events.extend({
 	
-	init: function() {
-		var Config = require('./Config'),
-				Server = require('./Server'),
-				Clients = require('./Clients'),
-				self = this;
-		
-		this.config = new Config(); // KICK THIS PIG!!!
-		this.server = {};
-		this.clients = {};
-		
-		this.config.on('init', function() {
-			
-			// config is ready, start the server
-			self.server = new Server(self.config.json);
-			self.clients = new Clients(self.config.json);
-			
-			// the server is listening
-			self.server.on('started', function() {
-			
-				// handle when the control channel gets config from a client
-				self.server.channels.control.on('gotSync', function(remoteConfig) {
-					self.config.sync(remoteConfig);
-				});
-				
-				// server is started, connect to the hubs
-				self.clients.addAll();
-			});
-			
-			// when a client emits a 'gotSync', send the remoteConfig to the config class for processing
-			self.clients.on('gotSync', function(remoteConfig) {
-				self.config.sync(remoteConfig);
-			});
-			
-			
-			self.emit('init'); // hub.inited!
-			
-			
-			// start the server
-			// this turned off so that the GUI can turn the hub on/off
-//			self.server.start();
-		});
-		
-		// when a sync event finds a new hub, connect to it
-		this.config.on('newHub', function(hub) {
-			self.clients.addOne(hub)
-		});
-	},
-	
-	data: function() {
+	init: function(config) {
 		var self = this;
 		
-		var data = {
-			server: {
-				id: this.server.id,
-				started: this.server.started,
-				channels: function() {
-					var channels = [];
-					for (var c in self.server.channels) {
-						var channel = self.server.channels[c];
-						channels.push({
-							id: channel.channelId,
-							name: c,
-							clientsConnected: channel.clientsConnected
-						});
-					}
-					return channels;
-				}()
-			}
-		};
-		return data;
-	}
+		this._config = config;
+		this.started = false;
+		
+		// config is ready, start the server
+		this.server = new Server(this._config);
+		this.controllers = new Controllers(this._config);
+		
+		// the server is started
+		this.server.on('started', function() {
+			self.controllers.startAll();
+			self.started = true;
+			self.emit('started');
+		});
+		
+		// the server is stopped
+		this.server.on('stopped', function() {
+			self.started = false;
+			self.emit('stopped');
+		})
+		
+		this.emit('init'); // hub.inited!
+	},
+	
+	start: function() { this.server.start(); },
+	
+	stop: function() { this.server.stop(); }
 	
 });
-
-module.exports = Hub;

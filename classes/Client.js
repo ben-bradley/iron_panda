@@ -1,40 +1,62 @@
-/*
-* Parent class for all clients.
-*/
-
 var Events = require('./Events'),
 		ioClient = require('socket.io-client');
 
 module.exports = Events.extend({
 	
-	init: function(hub, channel) {
-		this.id = new Date().getTime();
-		this.hub = hub;
-		this.channel = channel;
-		this.hubUrl = (this.hub.socketio && this.channel) ? 'http://'+this.hub.socketio+'/'+this.channel : false;
-		if (this.hubUrl) { this._connect(); }
-		else { console.log('cannot connect to: http://'+this.hubUrl); }
-	},
-	
-	// shut down this client
-	close: function() {
-		this.io.disconnect();
-		this.emit('closed');
-		delete this;
-	},
-	
-	// private fn to initiate a connection
-	_connect: function() {
+	init: function(config, hub) {
 		var self = this;
-		// include secret for authorization
-		this.io = ioClient.connect(this.hubUrl, { query: 'secret='+this._config.secret });
-		// handle the returned channelId
-		this.io.on('connected', function(channelId) {
-			self.channelId = channelId;
-			self.emit('gotChannelId'); // handle the channelId at the collection to sort out duplicates
+		
+		this._config = config;
+		this.io = ioClient.connect(hub.socketio, { query: 'secret='+this._config.json.secret });
+		
+		this.io.on('connected', function(data) {
+			self.serverData = data;
+			self.emit('gotServerId', data.id);
 		});
 		
-		this.io.on('disconnect', function() { self.emit('closed'); });
+	},
+	
+	connected: function() {
+		
+		// sync hubs from server
+		this._config.syncHubs(this.serverData.hubs);
+		
+		// sync hubs TO server
+		this.io.emit('connected', {
+			id: this._config.id,
+			hubs: this._config.json.hubs,
+			ioPort: this._config.json.ioPort,
+			expressPort: this._config.json.expressPort
+		});
+		
+		// join the control room
+		this.io.emit('join', { rooms: [ 'control' ] });
+		
+		// set the connection data
+		this.serverId = this.serverData.id;
+		this.serverAddress = this.io.socket.options.host;
+		
+	},
+	
+	disconnect: function() {
+		this.io.disconnect();
+	},
+	
+	toJSON: function(callback) {
+		var json = {
+			serverId: this.serverId,
+			serverAddress: this.serverAddress,
+			open: this.io.socket.open,
+			connected: this.io.socket.connected,
+			sessionid: this.io.socket.sessionid
+		};
+		if (callback) { callback(json); }
+		else { return json; }
+	},
+	
+	getRooms: function(callback) {
+		this.io.once('gotRooms', function(data) { callback(data); });
+		this.io.emit('getRooms');
 	}
 	
 });

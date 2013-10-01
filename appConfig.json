@@ -2,18 +2,6 @@
 	"expressPort": 8088,
 	"ioPort": 8087,
 	"secret": "passWORD",
-	"listeners": [
-		{
-			"ip": "1.2.3.4",
-			"hostname": "test.example.com",
-			"username": "admin",
-			"password": "admin",
-			"connectionType": "telnet",
-			"publishTo": [
-				"localhost/event"
-			]
-		}
-	],
 	"hubs": [
 		{ "socketio": "api.integra.engr:8087", "express": "api.integra.engr:8088" },
 		{ "socketio": "web-2-test.integra.engr:8087", "express": "web-2-test.integra.engr:8088" }

@@ -10,7 +10,6 @@ define([
 			var data = {},
 					compiledSplash = _.template(splashTemplate, data);
 			this.$el.append(compiledSplash);
-			console.log(this.$el);
 		}
 	});
 	

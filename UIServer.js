@@ -1,59 +1,77 @@
 var express = require('express'),
 		app = express(),
+		Config = require(__dirname+'/classes/Config'),
 		Hub = require(__dirname+'/classes/Hub');
 
-var hub = new Hub();
+var config = new Config();
 
 // once the hub is inited, start the UI
-hub.on('init', function() {
+config.on('ready', function() {
 	app.configure(function() {
+		
+		var hub = new Hub(config);
 		
 		// app configs
 		app.use(express.bodyParser()); // handle POST/PUT
 		app.use(express.cookieParser()); // enable sessions
 		app.use(express.session({ secret: 'blargh' })); // configure sessions
-//		app.use(express.logger({ stream: accessLog }));
 		
 		app.use('/', express.static(__dirname+'/ui'));
 		
-		app.get('/api/hubs', function(req, res) {
-			res.send(hub.config.json.hubs);
+		// start the local hub & controllers
+		app.get('/api/controller/start', function(req, res) {
+			hub.once('started', function() { res.send({ started: hub.started }); });
+			if (hub.started === false) { hub.start(); }
+			else { res.send({ started: hub.started }); }
 		});
 		
-		app.get('/api/controllers', function(req, res) {
-			res.send(hub.clients.listControllers());
+		// stop the local
+		app.get('/api/controller/stop', function(req, res) {
+			hub.once('stopped', function() { res.send({ started: hub.started }); });
+			if (hub.started === true) { hub.stop(); }
+			else { res.send({ started: hub.started }); }
 		});
 		
-		app.get('/api/controllers/:hub', function(req, res) {
-			res.send(hub.clients.get(req.params.hub).toJSON());
-		});
-		
-		app.get('/api/controllers/:hub/channels', function(req, res) {
-			var client = hub.clients.get(req.params.hub);
-			if (client) {
-				client.on('gotChannels', function(channels) { res.send(channels); });
-				client.getChannels();
+		// restart the local controller
+		app.get('/api/controller/restart', function(req, res) {
+			hub.once('started', function() { res.send({ started: hub.started }); });
+			if (hub.started === true) {
+				hub.once('stopped', function() { hub.start(); });
+				hub.stop();
 			}
-			else { res.send(client); }
+			else {
+				hub.start();
+			}
 		});
 		
-		app.get('/api/hub', function(req, res) {
-			res.send(hub.data());
+		// list the active control clients
+		app.get('/api/controllers', function(req, res) {
+			var controllersJSON = [];
+			hub.controllers.clients().forEach(function(client) {
+				controllersJSON.push(client.toJSON());
+			});
+			res.send(controllersJSON);
 		});
 		
-		app.get('/api/hub/server', function(req, res) {
-			res.send(hub.data().server);
+		// get JSON for a specific hub
+		app.get('/api/controllers/:hub', function(req, res) {
+			var controller = hub.controllers.clients(req.params.hub);
+			if (controller) { res.send(controller.toJSON()); }
+			else { res.send({}); }
 		});
 		
-		app.get('/api/hub/server/channels', function(req, res) {
-			res.send(hub.data().server.channels);
-		});
-		
-		app.get('/api/hub/start', function(req, res) {
-			hub.server.start(function() { res.send({ result: 'started' }); });
+		// list the rooms for a specific hub
+		app.get('/api/controllers/:hub/rooms', function(req, res) {
+			var controller = hub.controllers.clients(req.params.hub);
+			if (controller) { controller.getRooms(function(data) { res.send(data); });	}
+			else { res.send({}); }
 		});
 		
 	});
 	
-	app.listen(hub.config.json.expressPort);
+	// start the UI
+	app.listen(config.json.expressPort);
+	
 });
+
+config.read();

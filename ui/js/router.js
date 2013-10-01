@@ -3,8 +3,9 @@ define([
 	'underscore',
 	'backbone',
 	'views/navbar',
-	'views/splash'
-], function($, _, Backbone, NavbarView, SplashView) {
+	'views/splash',
+	'models/hub'
+], function($, _, Backbone, NavbarView, SplashView, HubModel) {
 	var AppRouter = Backbone.Router.extend({
 		routes: {
 			// Define some URL routes
@@ -18,16 +19,14 @@ define([
 
 	var initialize = function(){
 		var app_router = new AppRouter,
-				navbarView = new NavbarView();
+				hubModel = new HubModel(),
+				navbarView = new NavbarView({ model: hubModel });
 		
 		app_router.on('route:defaultRoute', function(actions){
 			// show splash
 			var splashView = new SplashView();
 			splashView.render();
 		});
-		
-		// trigger by default to build the page framework
-		navbarView.render();
 		
 		Backbone.history.start();
 	};

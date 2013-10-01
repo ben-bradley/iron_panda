@@ -1,7 +1,19 @@
 <div class='navbar-header'>
 	<a class='navbar-brand' href='#'>Iron Panda</a>
 </div>
-<ul class='nav navbar-nav'>
-	<li><a href='#1'>Link1</a></li>
-	<li><a href='#2'>Link2</a></li>
-</ul>
+<div class='collapse navbar-collapse navbar-ex1-collapse'>
+	<ul class='nav navbar-nav'>
+		<li><a href='#1'>Link1</a></li>
+		<li><a href='#2'>Link2</a></li>
+	</ul>
+	<ul class='navbar-form navbar-right'>
+		<div class='form-group'>
+			<button id='startHub' class='btn btn-success<% if (started === true) { %> hidden<% } %>' type='button'>
+				Start Hub <span class='glyphicon glyphicon-off'></span>
+			</button>
+			<button id='stopHub' class='btn btn-danger<% if (started === false) { %> hidden<% } %>' type='button'>
+				Stop Hub <span class='glyphicon glyphicon-off'></span>
+			</button>
+		</div>
+	</ul>
+</div>
