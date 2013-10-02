@@ -31,19 +31,18 @@ var Server = Events.extend({
 		// set the event handlers for each socket
 		this.io.on('connection', function(socket) {
 			var ip = socket.handshake.address.address;
-			console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@');
-			console.log('connection from: '+ip);
-			console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@');
 			
-			// send the 'connected' event back to the client
-			socket.emit('connected', { id: self._config.id, hubs: self._config.json.hubs });
+			// send the 'serverData' event back to the client
+			socket.emit('serverData', { id: self._config.id, hubs: self._config.json.hubs });
 			
 			// the client has accepted the connection
-			socket.on('connected', function(data) {
+			socket.on('clientData', function(clientData) {
 				
 				// push this client info into the hubs & sync the client hubs with server hubs
-				data.hubs.unshift({ socketio: ip+':'+data.ioPort, express: ip+':'+data.expressPort });
-				self._config.syncHubs(data.hubs);
+				var clientHub = { socketio: ip+':'+clientData.ioPort, express: ip+':'+clientData.expressPort };
+				clientData.hubs.unshift(clientHub);
+				self._config.syncHubs(clientData.hubs);
+				self.emit('clientConnected', clientHub);
 				
 				// set up the join/leave rooms
 				socket.on('join', function(data) {
@@ -84,13 +83,10 @@ var Server = Events.extend({
 		// stop listening for new connections
 		this.io.server.close();
 		
+		// send all sockets the disconnect
 		this.io.sockets.emit('disconnect');
 		
-		// close existing connections
-//		for (var s in this.io.sockets.sockets) {
-//			this.io.sockets.sockets[s].disconnect();
-//		}
-		
+		// stop it
 		this.started = false;
 		this.emit('stopped');
 	}

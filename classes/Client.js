@@ -7,22 +7,35 @@ module.exports = Events.extend({
 		var self = this;
 		
 		this._config = config;
-		this.io = ioClient.connect(hub.socketio, { query: 'secret='+this._config.json.secret });
+		this._hub = hub;
+		this.id = new Date().getTime();
 		
-		this.io.on('connected', function(data) {
-			self.serverData = data;
-			self.emit('gotServerId', data.id);
+		this.io = ioClient.connect(hub.socketio, {
+			query: 'secret='+this._config.json.secret,
+			'force new connection': true // facepalm
+		});
+		
+		// pass the serverData event to the controllers so it can check for duplicates
+		this.io.on('serverData', function(serverData) {
+			self.serverData = serverData;
+			self.emit('serverData', serverData);
+		});
+		
+		// pass the disconnect event so that the controllers can stay current
+		this.io.on('disconnect', function() {
+			self.emit('disconnect');
 		});
 		
 	},
 	
-	connected: function() {
+	// triggered by controllers when connection is NOT a dupe
+	acceptConnection: function() {
 		
 		// sync hubs from server
 		this._config.syncHubs(this.serverData.hubs);
 		
 		// sync hubs TO server
-		this.io.emit('connected', {
+		this.io.emit('clientData', {
 			id: this._config.id,
 			hubs: this._config.json.hubs,
 			ioPort: this._config.json.ioPort,
@@ -32,20 +45,21 @@ module.exports = Events.extend({
 		// join the control room
 		this.io.emit('join', { rooms: [ 'control' ] });
 		
-		// set the connection data
-		this.serverId = this.serverData.id;
-		this.serverAddress = this.io.socket.options.host;
-		
 	},
 	
-	disconnect: function() {
+	// triggered by controllers when disconnect occurs
+	stop: function() {
 		this.io.disconnect();
+		this.emit('stopped');
+		delete this;
 	},
 	
 	toJSON: function(callback) {
 		var json = {
-			serverId: this.serverId,
-			serverAddress: this.serverAddress,
+			id: this.id,
+			serverId: this.serverData.id,
+			serverAddress: this.io.socket.options.host,
+			hub: this._hub,
 			open: this.io.socket.open,
 			connected: this.io.socket.connected,
 			sessionid: this.io.socket.sessionid

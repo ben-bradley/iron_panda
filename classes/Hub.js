@@ -23,9 +23,15 @@ module.exports = Events.extend({
 		
 		// the server is stopped
 		this.server.on('stopped', function() {
+			self.controllers.stopAll();
 			self.started = false;
 			self.emit('stopped');
-		})
+		});
+		
+		// a client connected, try connecting back to it
+		this.server.on('clientConnected', function(clientHub) {
+			self.controllers.startOne(clientHub);
+		});
 		
 		this.emit('init'); // hub.inited!
 	},

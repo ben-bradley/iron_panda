@@ -53,18 +53,18 @@ config.on('ready', function() {
 			res.send(controllersJSON);
 		});
 		
-		// get JSON for a specific hub
-		app.get('/api/controllers/:hub', function(req, res) {
-			var controller = hub.controllers.clients(req.params.hub);
+		// get JSON for a specific controller.id
+		app.get('/api/controllers/:id', function(req, res) {
+			var controller = hub.controllers.clients(req.params.id);
 			if (controller) { res.send(controller.toJSON()); }
-			else { res.send({}); }
+			else { res.send({ error: 'controller id '+req.params.id+' not found!'}); }
 		});
 		
-		// list the rooms for a specific hub
-		app.get('/api/controllers/:hub/rooms', function(req, res) {
-			var controller = hub.controllers.clients(req.params.hub);
+		// list the rooms for a specific controller.id
+		app.get('/api/controllers/:id/rooms', function(req, res) {
+			var controller = hub.controllers.clients(req.params.id);
 			if (controller) { controller.getRooms(function(data) { res.send(data); });	}
-			else { res.send({}); }
+			else { res.send({ error: 'controller id '+req.params.id+' not found!'}); }
 		});
 		
 	});
